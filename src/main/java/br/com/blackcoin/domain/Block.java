@@ -1,11 +1,12 @@
 package br.com.blackcoin.domain;
 
-import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
+import org.bouncycastle.util.encoders.Hex;
+
+import com.google.gson.Gson;
 
 public class Block {
 	
@@ -25,48 +26,26 @@ public class Block {
 
 
     public String calculateHash() {
-        String transactionsJson = convertTransactionsToJson(transactions);
-        String dataToHash = previousHash + timestamp + transactionsJson + nonce;
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(dataToHash.getBytes("UTF-8"));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String convertTransactionsToJson(List<Transaction> transactions) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(transactions);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Erro ao converter transações para JSON", e);
-        }
+        String dataToHash = previousHash + timestamp + new Gson().toJson(transactions) + nonce;
+        SHA256.Digest sha256 = new SHA256.Digest();
+        byte[] hash = sha256.digest(dataToHash.getBytes());
+        return new String(Hex.encode(hash));
     }
 
     public void mineBlock(int difficulty) {
-    	String prefix = "0".repeat(difficulty);
-    	while (hash.startsWith(prefix)) {
-    		this.nonce++;
-    		this.hash = this.calculateHash();
-	    }
+        String target = new String(new char[difficulty]).replace('\0', '0');
+        while (!hash.substring(0, difficulty).equals(target)) {
+            nonce++;
+            hash = calculateHash();
+        }
+        System.out.println("Block mined: " + hash);
     }
     
 	boolean hasValidTransactions() {
-		for (Transaction transaction : transactions) {
-			if (!transaction.isValid()) {
-				return false;
-			}
-		}
-		return true;
+        for (Transaction tx : transactions) {
+            if (!tx.isValid()) return false;
+        }
+        return true;
 	}
 
 
@@ -94,6 +73,4 @@ public class Block {
 		return hash;
 	}
 	
-
-
 }
