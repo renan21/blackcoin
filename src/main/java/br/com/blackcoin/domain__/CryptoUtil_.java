@@ -1,13 +1,15 @@
-package br.com.blackcoin.domain;
+package br.com.blackcoin.domain__;
 
-import org.bouncycastle.util.encoders.Hex;
+import java.math.BigDecimal;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 
-public class CryptoUtil {
+import org.bouncycastle.util.encoders.Hex;
+
+public class CryptoUtil_ {
 	
     public static String getStringFromKey(PrivateKey key) {
         return Hex.toHexString(key.getEncoded());
@@ -26,5 +28,12 @@ public class CryptoUtil {
         ecdsaVerify.update(data.getBytes());
         return ecdsaVerify.verify(signature);
     }
+    
+//    public static void main(String[] args) throws Exception {
+//    	Blockchain bc = new Blockchain();
+//    	bc.addTransaction(new Transaction_("aa", "aa",  BigDecimal.TEN));
+//    	System.out.println("aa");
+//    	
+//    }
 
 }

@@ -10,67 +10,62 @@ import com.google.gson.Gson;
 
 public class Block {
 	
-	private String previousHash;
 	private LocalDateTime timestamp;
-	private List<Transaction> transactions;
-	private int nonce;
+	private List<Transaction>  transactions;
+	private String previousHash = "";
 	private String hash;
-
-	Block(LocalDateTime timestamp, List<Transaction> transactions, String previousHash) {
-	    this.previousHash = previousHash;
-	    this.timestamp = timestamp;
-	    this.transactions = transactions;
-	    this.nonce = 0;
-	    this.hash = this.calculateHash();
+	private int nounce;
+	
+	Block(LocalDateTime timestamp, List<Transaction> transactions, String previousHash){
+		this.timestamp = timestamp;
+		this.transactions = transactions;
+		this.previousHash = previousHash;
+		this.hash = calculateHash();
 	}
-
-
+	
     public String calculateHash() {
-        String dataToHash = previousHash + timestamp + new Gson().toJson(transactions) + nonce;
+        String dataToHash = previousHash + timestamp + new Gson().toJson(transactions) + nounce;
         SHA256.Digest sha256 = new SHA256.Digest();
         byte[] hash = sha256.digest(dataToHash.getBytes());
         return new String(Hex.encode(hash));
     }
-
-    public void mineBlock(int difficulty) {
+    
+    public void mineBlock(int difficulty) {    	
         String target = new String(new char[difficulty]).replace('\0', '0');
         while (!hash.substring(0, difficulty).equals(target)) {
-            nonce++;
+        	nounce++;
             hash = calculateHash();
         }
         System.out.println("Block mined: " + hash);
     }
     
-	boolean hasValidTransactions() {
-        for (Transaction tx : transactions) {
-            if (!tx.isValid()) return false;
-        }
-        return true;
-	}
-
-
-	public String getPreviousHash() {
-		return previousHash;
-	}
-
+    public boolean hasValidTransaction() throws Exception{
+    	for(Transaction transaction : transactions) {
+    		if(!transaction.isValid()) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
 
 	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
-
 	public List<Transaction> getTransactions() {
 		return transactions;
 	}
 
-
-	public int getNonce() {
-		return nonce;
+	public String getPreviousHash() {
+		return previousHash;
 	}
-
 
 	public String getHash() {
 		return hash;
 	}
-	
+
+	public int getNounce() {
+		return nounce;
+	}
+
 }

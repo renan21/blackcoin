@@ -21,7 +21,7 @@ public class BlackcoinController {
 
 	
 	@PostMapping("transaction")
-	public ResponseEntity transaction(@RequestBody @Valid TransactionData transactionData) {
+	public ResponseEntity transaction(@RequestBody /* @Valid */ TransactionData transactionData) {
 		return ResponseEntity.ok(blackcoinService.addTransaction(transactionData));
 	}
 	
