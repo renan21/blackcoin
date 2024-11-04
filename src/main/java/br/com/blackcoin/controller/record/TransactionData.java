@@ -1,5 +1,7 @@
 package br.com.blackcoin.controller.record;
 
-public record TransactionData() {
+import java.math.BigDecimal;
+
+public record TransactionData(String fromPublicKey, String toPublicKey, BigDecimal amount) {
 
 }

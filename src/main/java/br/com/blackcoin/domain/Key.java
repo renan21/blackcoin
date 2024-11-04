@@ -5,6 +5,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
@@ -19,7 +20,7 @@ public class Key {
 	
 	private KeyPair keyPair;
 
-	Key(String privateKey) throws Exception{
+	public Key(String privateKey) throws Exception{
 		Security.addProvider(new BouncyCastleProvider());
 		PrivateKey privateKey_ = loadPrivateKey(privateKey);
 		keyPair = reconstructKeyPair(privateKey_);
@@ -52,12 +53,17 @@ public class Key {
         KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
         return keyFactory.generatePrivate(keySpec);
     }
-    
-
-	
-	
+    	
 	private String encodeToString(byte[] encodedeKey) {
         return Base64.getEncoder().encodeToString(encodedeKey);
+	}
+
+	public String sign(String transactionHash) throws Exception {
+        Signature edca = Signature.getInstance("SHA256withECDSA", "BC");
+        edca.initSign(keyPair.getPrivate());
+        edca.update(transactionHash.getBytes());
+        byte[] sig = edca.sign();
+        return Base64.getEncoder().encodeToString(sig);
 	}
 
 }

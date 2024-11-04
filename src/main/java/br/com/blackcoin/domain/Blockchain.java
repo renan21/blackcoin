@@ -16,7 +16,7 @@ public class Blockchain {
 	private List<Transaction> pendingTransactions;
 	private BigDecimal miningReward;
 
-	Blockchain() {
+	public Blockchain() {
 		chain = new ArrayList<Block>();
 		chain.add(createGenesisBlock());
 		difficulty = 2;
@@ -33,6 +33,9 @@ public class Blockchain {
 	}
 
 	public void minePendingTransactions(String mineRewardKey){
+		Transaction rewardTransaction = new Transaction("", mineRewardKey, miningReward);		
+		pendingTransactions.add(rewardTransaction);
+		
 		Block previousBlock = getLatestBlock();
 		Block block = new Block(LocalDateTime.now(), pendingTransactions, previousBlock.getHash());
 		block.mineBlock(difficulty);
@@ -41,11 +44,9 @@ public class Blockchain {
 		chain.add(block);
 		
 		pendingTransactions =  new ArrayList<>();
-		pendingTransactions.add(new Transaction("", mineRewardKey, miningReward));	
 	}
 	
-	public void addTransaction(Transaction transaction) throws Exception {
-		
+	public void addTransaction(Transaction transaction) throws Exception {		
         if (transaction.getFromKey() == null || transaction.getToKey() == null) {
             throw new Exception("Transaction must include from and to address");
         }
@@ -53,7 +54,6 @@ public class Blockchain {
         if (!transaction.isValid()) {
             throw new Exception("Cannot add invalid transaction to chain");
         }
-		
 		
 		pendingTransactions.add(transaction);
 	}

@@ -3,7 +3,6 @@ package br.com.blackcoin.domain;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -19,13 +18,11 @@ public class Transaction {
 	private String toKey;
 	private BigDecimal amount;
 	private String signature;
-//	private LocalDateTime timeStamp;
 
-	Transaction(String fromKey, String toKey, BigDecimal amount) {
+	public Transaction(String fromKey, String toKey, BigDecimal amount) {
 		this.fromKey = fromKey;
 		this.toKey = toKey;
 		this.amount = amount;
-//		this.timeStamp = LocalDateTime.now();
 	}
 	
 	private String calculateHash() throws NoSuchAlgorithmException, UnsupportedEncodingException {
@@ -35,19 +32,16 @@ public class Transaction {
         return new String(Hex.encode(hash));
 	}
 	
-	public void signTransaction(Key key) throws Exception {
+	public void signTransaction(Key key) throws Exception  {
         if (!key.getPublicKey().equals(fromKey)) {
             throw new Exception("You cannot sign transactions for other wallets!");
         }
 				
-		String TransactionToHash = calculateHash();
+		String transactionHash = calculateHash();
 		
-        Signature edca = Signature.getInstance("SHA256withECDSA", "BC");
-        edca.initSign(key.getPrivateKey());
-        edca.update(TransactionToHash.getBytes());
-        byte[] sig = edca.sign();
+		signature = key.sign(transactionHash);
+		
 
-        signature = Base64.getEncoder().encodeToString(sig);
 	}
 	
 	//TODO: Refactor
@@ -56,12 +50,13 @@ public class Transaction {
 			return true;
 		}
 		
-		if(signature != null || signature.length() == 0) {
+		if(signature == null || signature.length() == 0) {
 			throw new RuntimeException("No signature in this transaction");
 		}
 		
-        byte[] byteKey = Hex.decode(fromKey);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(byteKey);
+        byte[] publicKeyBytes = Base64.getDecoder().decode(fromKey);		
+
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
         PublicKey publicKey = keyFactory.generatePublic(spec);
         
@@ -81,6 +76,10 @@ public class Transaction {
 
 	public BigDecimal getAmount() {
 		return amount;
+	}
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
 	}
 	
 	
